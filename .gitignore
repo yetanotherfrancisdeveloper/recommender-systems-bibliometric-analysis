@@ -3,6 +3,13 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Pycharm
+.idea
+
+# pipenv
+Pipfile
+Pipfile.lock
+
 # C extensions
 *.so
 
