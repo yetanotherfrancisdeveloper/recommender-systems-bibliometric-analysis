@@ -10,6 +10,10 @@ __pycache__/
 Pipfile
 Pipfile.lock
 
+# Directories
+data
+plots
+
 # C extensions
 *.so
 
