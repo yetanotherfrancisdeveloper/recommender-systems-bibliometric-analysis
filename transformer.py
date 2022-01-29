@@ -11,9 +11,9 @@ def generate_keywords(docs):
     keywords = list()
 
     for idx, summary in enumerate(docs):
-      if idx % 50 == 0:
-        print(f'Processing paper {idx+1}')
-      keywords.append(keywords_model.extract_keywords(summary, keyphrase_ngram_range=(1, 2), stop_words=None))
+        if idx % 50 == 0:
+            print(f'Processing paper {idx+1}')
+        keywords.append(keywords_model.extract_keywords(summary, keyphrase_ngram_range=(1, 2), stop_words=None))
     return keywords
 
 
