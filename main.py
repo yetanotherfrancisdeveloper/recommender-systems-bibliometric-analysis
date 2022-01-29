@@ -79,7 +79,7 @@ def bar_plot(words_list: list, frequencies: list, width=0.35, top_k=10):
 
     if not os.path.isdir(PLOT_PATH):
         os.mkdir(PLOT_PATH)
-    plt.savefig(f'{PLOT_PATH}/top_{top_k}_words_by_frequency.png')
+    plt.savefig(os.path.join(PLOT_PATH, f'top_{top_k}_words_by_frequency.png'))
     plt.close()
 
 
