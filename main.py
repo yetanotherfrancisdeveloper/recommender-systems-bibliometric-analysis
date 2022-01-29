@@ -8,19 +8,13 @@ from matplotlib import pyplot as plt
 from nltk import pos_tag
 from nltk.stem.wordnet import WordNetLemmatizer
 from tqdm import tqdm
+from utils import read_data, PLOT_PATH
 
 nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 pd.set_option('display.max_columns', None)
 stopwords = nltk.corpus.stopwords.words('english')
-
-
-def read_data():
-    papers_df = pd.read_csv('data/df.csv')
-    papers_df.drop('Unnamed: 0', axis=1, inplace=True)
-
-    return papers_df
 
 
 def add_word_count(df: pd.DataFrame, col_name: str):
@@ -83,13 +77,10 @@ def bar_plot(words_list: list, frequencies: list, width=0.35, top_k=10):
     plt.xticks(x, words_list[:top_k], rotation=25)
     plt.title(f'Top {top_k} words by frequency')
 
-    if not os.path.isdir('plots'):
-        os.mkdir('plots')
-        plt.savefig(f'plots/top_{top_k}_words_by_frequency.png')
-        plt.close()
-    else:
-        plt.savefig(f'plots/top_{top_k}_words_by_frequency.png')
-        plt.close()
+    if not os.path.isdir(PLOT_PATH):
+        os.mkdir(PLOT_PATH)
+    plt.savefig(f'{PLOT_PATH}/top_{top_k}_words_by_frequency.png')
+    plt.close()
 
 
 def main():
