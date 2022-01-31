@@ -1,9 +1,7 @@
 import os
 import json
 import pandas as pd
-
-DATA_PATH = 'data'
-PLOT_PATH = 'plots'
+from config import DATA_PATH
 
 
 def read_data():    # TODO: Make 'df.csv' customisable

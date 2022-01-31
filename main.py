@@ -8,7 +8,8 @@ from matplotlib import pyplot as plt
 from nltk import pos_tag
 from nltk.stem.wordnet import WordNetLemmatizer
 from tqdm import tqdm
-from utils import read_data, PLOT_PATH
+from utils import read_data
+from config import PLOT_PATH
 
 nltk.download('stopwords')
 nltk.download('wordnet')
