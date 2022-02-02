@@ -9,7 +9,11 @@ from utils import read_data
 def find_pdf(df):
     for link in tqdm(df.entry_id):
         # Get and read page in BeautifulSoup
-        page = requests.get(link)
+        try:
+            page = requests.get(link)
+        except (ConnectionError, ConnectionResetError):
+            print('Cannot get page :(')
+            continue
         soup = BeautifulSoup(page.content, 'html.parser')
         # Download and save page
         page_pdf_download = soup.find_all('a', class_='abs-button download-pdf')
@@ -20,7 +24,7 @@ def find_pdf(df):
             continue
         try:
             wget.download(pdf_address, PDF_PATH)
-        except (ValueError, ConnectionResetError):
+        except (ValueError, ConnectionResetError, ConnectionError):
             print(f'This url does not exist: {pdf_address}')
             continue
 
