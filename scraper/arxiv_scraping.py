@@ -20,7 +20,7 @@ def find_pdf(df):
             continue
         try:
             wget.download(pdf_address, PDF_PATH)
-        except ValueError:
+        except (ValueError, ConnectionResetError):
             print(f'This url does not exist: {pdf_address}')
             continue
 
