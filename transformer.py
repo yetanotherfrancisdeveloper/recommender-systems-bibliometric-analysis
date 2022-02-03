@@ -6,7 +6,8 @@ from config import DATA_PATH, TXT_PATH, PLOT_PATH
 from keybert import KeyBERT
 from matplotlib import pyplot as plt
 from preprocessing import (pre_processing, corpus_words_frequency, get_words_for_pos, get_pos_tag, clean_corpus_by_pos,
-                           remove_most_frequent_words, remove_short_words, remove_short_texts)
+                           remove_most_frequent_words, remove_short_words, remove_short_texts, plot_words_distribution,
+                           compute_tf_idf)
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
@@ -128,10 +129,10 @@ def main(model='keybert'):
         print('\nGetting words\' frequency ...')
         words_count = corpus_words_frequency(corpus)
         words_list = list(words_count.keys())
-        words_count_sorted = sorted(words_count.items(), key=lambda x: x[1], reverse=True)
-        words_count_sorted_dict = dict(words_count_sorted)
+        # words_count_sorted = sorted(words_count.items(), key=lambda x: x[1], reverse=True)
+        # words_count_sorted_dict = dict(words_count_sorted)
         # Words to remove
-        print(list(words_count_sorted_dict.keys())[:100])
+        # print(list(words_count_sorted_dict.keys())[:100])
 
         print('\nGetting words for POS tag ...')
         # TODO: save the POS tags in a .json
@@ -146,6 +147,7 @@ def main(model='keybert'):
         new_corpus = clean_corpus_by_pos(corpus, noun_words)
         print('\nGetting words\' frequency ...')
         new_words_count = corpus_words_frequency(new_corpus)
+        plot_words_distribution(new_words_count)
 
         # Remove most frequent words
         new_corpus_clean = remove_most_frequent_words(new_corpus, new_words_count)
@@ -153,6 +155,18 @@ def main(model='keybert'):
         # LDA clustering with new corpus
         txt_df = pd.DataFrame({'article': new_corpus_clean})
         results_df = lda_clustering(txt_df, column='article')
+        # Computing top 20 words by tf-idf
+        print('\nComputing tf-idf ...')
+        top_tf_idf_words, tf_idf_results = compute_tf_idf(results_df)
+        # Printing top 20 words by tf-idf
+        topics = results_df.topics.unique()
+        topics.sort()
+        for topic in topics:
+            print(f"\nTF-IDF TOP {20} WORDS FOR TOPIC #{topic}")
+            print(top_tf_idf_words[topic])
+
+        # Adding .txt and .pdf files' names to csv and saving it
+        print('\nSaving csv with results ...')
         results_df['file'] = txt_list
         results_df = get_pdf_from_txt_name(results_df)
         results_df.to_csv(f'{DATA_PATH}/lda_results.csv')

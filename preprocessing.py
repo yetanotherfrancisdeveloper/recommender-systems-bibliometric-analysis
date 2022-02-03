@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from nltk import pos_tag
 from nltk.corpus import words
 from nltk.stem.wordnet import WordNetLemmatizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 from tqdm import tqdm
 
 stopwords = nltk.corpus.stopwords.words('english')
@@ -73,6 +74,39 @@ def remove_short_texts(corpus: list, threshold=100):
     short_texts_idxes = [corpus.index(text) for text in corpus if len(text) <= threshold]
 
     return only_long_texts, short_texts_idxes
+
+
+def compute_tf_idf(df, top_k=20):
+    tfidf = TfidfVectorizer()
+    topics = df.topics.unique()
+    topics_docs = [df.loc[df.topics == topic].article.tolist() for topic in topics]
+    # For eventual strange results there is a check for the text to be a string
+    topics_docs = [[doc if isinstance(doc, str) else '' for doc in topic_corpus] for topic_corpus in topics_docs]
+
+    top_tf_idf_words_per_topic = []
+    tf_idf_results = []
+    for topic_corpus in topics_docs:
+        tf_idf_topic = tfidf.fit_transform(topic_corpus)
+        tf_idf_results.append(tf_idf_topic)
+
+        # Finding top words
+        # Sorting vocabulary of words for which the tf-idf was computed
+        sorted_vocabulary = sorted(tfidf.vocabulary_.items(), key=lambda x: x[1])
+        sorted_vocabulary_dict = dict(sorted_vocabulary)
+        # Getting words sorted by index in array
+        vocab_array = np.array(list(sorted_vocabulary_dict.keys()))
+        # Reshaping the vocabulary to the same shape of tf-idf array computed (tf_idf_topic)
+        vocab_array_resh = np.tile(vocab_array, (tf_idf_topic.toarray().shape[0], 1))
+        # Flattening it
+        vocab_array_resh_flat = vocab_array_resh.ravel()
+        # Getting indexes of array sorted by value (from lowest to highest)
+        tf_idf_values_sorted = np.argsort(tf_idf_topic.toarray().ravel())
+        # Getting top_k words by tf-idf
+        top_tf_idf_values = tf_idf_values_sorted[-top_k:][::-1]
+        top_tf_idf_words = vocab_array_resh_flat[top_tf_idf_values]
+        top_tf_idf_words_per_topic.append(top_tf_idf_words.tolist())
+
+    return top_tf_idf_words_per_topic, tf_idf_results
 
 
 def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
