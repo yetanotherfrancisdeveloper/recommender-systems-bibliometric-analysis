@@ -3,6 +3,7 @@ import nltk
 import numpy as np
 import pandas as pd
 import re
+from config import PLOT_PATH
 from matplotlib import pyplot as plt
 from nltk import pos_tag
 from nltk.corpus import words
@@ -53,13 +54,13 @@ def remove_most_frequent_words(corpus: list, words_count: dict, top_k=100):
     print(f'\nTop {top_k} most frequent words: ')
     print(words_to_remove)
 
-    new_corpus = [' '.join([re.sub('|'.join(words_to_remove), '', word) for word in text.split()])
+    new_corpus = [' '.join([word for word in text.split() if word not in words_to_remove])
                   for text in tqdm(corpus)]
 
     return new_corpus
 
 
-def remove_short_words(corpus: list, threshold=3):
+def remove_short_words(corpus: list, threshold=4):
     words_lists = [text.split() for text in corpus]
     only_long_words = [' '.join([word for word in word_list if len(word) > threshold])
                        for word_list in tqdm(words_lists)]
@@ -67,8 +68,10 @@ def remove_short_words(corpus: list, threshold=3):
     return only_long_words
 
 
-def remove_short_texts(corpus: list):
-    pass
+def remove_short_texts(corpus: list, threshold=100):
+    only_long_texts = [text for text in tqdm(corpus) if len(text) > threshold]
+
+    return only_long_texts
 
 
 def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
@@ -108,11 +111,15 @@ def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
 def plot_words_distribution(words_count: dict):
     df = pd.DataFrame({'words': list(words_count.keys()), 'count': list(words_count.values())})
     bins = np.histogram(df['count'], bins=40)[1]
-
+    # Histogram of words' count
     plt.hist(df['count'], bins, alpha=.8, edgecolor='red', density=True, label='Count')
+    # Plot KDE
     df['count'].plot.kde()
+
     plt.xlim(left=0)
+    # Compute and plot mean and median of distribution
     plt.axvline(df['count'].mean(), color='k', linestyle='dashed', linewidth=1)
     plt.axvline(df['count'].median(), color='gray', linestyle='dashed', linewidth=1)
-    plt.show()
+
+    plt.savefig(f'{PLOT_PATH}/words_distribution.png')
     plt.close()

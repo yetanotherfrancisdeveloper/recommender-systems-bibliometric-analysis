@@ -2,11 +2,11 @@ import json
 import numpy as np
 import os
 import pandas as pd
-from config import DATA_PATH, TXT_PATH
+from config import DATA_PATH, TXT_PATH, PLOT_PATH
 from keybert import KeyBERT
 from matplotlib import pyplot as plt
 from preprocessing import (pre_processing, corpus_words_frequency, get_words_for_pos, get_pos_tag, clean_corpus_by_pos,
-                           remove_most_frequent_words, remove_short_words)
+                           remove_most_frequent_words, remove_short_words, remove_short_texts)
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
@@ -79,7 +79,7 @@ def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95, column='summary'):
         plt.scatter(x=tsne_lda_label[:, 0], y=tsne_lda_label[:, 1], c=colors[g], label=f'Topic {g}')
 
     plt.legend()
-    plt.show()
+    plt.savefig(f'{PLOT_PATH}/t-SNE_LDA_(topics={n_topics},min_df={min_df},max_df={max_df}.png')
     plt.close()
 
 
@@ -109,6 +109,10 @@ def main(model='keybert'):
         txt_df = pd.DataFrame({'article': txt_str_list})
         print('\nPre-processing articles for LDA ...')
         corpus = pre_processing(txt_df, 'article')
+
+        # Removing short texts
+        print('\nRemoving short texts ...')
+        corpus = remove_short_texts(corpus)
 
         # Removing short words
         print('\nRemoving short words ...')
