@@ -1,13 +1,17 @@
-import os
 import json
 import numpy as np
+import os
+import pandas as pd
+from config import DATA_PATH, TXT_PATH
 from keybert import KeyBERT
-from matplotlib import colors as m_colors
 from matplotlib import pyplot as plt
+from preprocessing import (pre_processing, corpus_words_frequency, get_words_for_pos, get_pos_tag, clean_corpus_by_pos,
+                           remove_most_frequent_words)
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
-from utils import obj_to_file, read_data, DATA_PATH
+from tqdm import tqdm
+from utils import obj_to_file, read_data
 
 keywords_model = KeyBERT()
 
@@ -39,11 +43,11 @@ def get_keywords_list(keyword_score_list, mode = 'all'):
     return keywords_list
 
 
-def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95):
+def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95, column='summary'):
     # Create Count Vectorizer instance and Document X Term matrix (dtm)
     print('\nCreating Count Vectorizer and Document X Term matrix ...')
     cv = CountVectorizer(max_df=max_df, min_df=min_df, stop_words="english")
-    dtm = cv.fit_transform(df['summary'])
+    dtm = cv.fit_transform(df[column])
 
     # Creat the model
     print('\nCreating LDA model ...')
@@ -60,38 +64,80 @@ def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95):
 
     final_topics = lda_model.transform(dtm)
     df["topics"] = final_topics.argmax(axis=1)
+    print(df.topics.head())
 
-    my_colors = np.array([color for name, color in m_colors.TABLEAU_COLORS.items()])
     # TSNE for visualization of the clusters
     print('\nCreating and fitting TSNE to visualize clusters in 2D ...')
     tsne_model = TSNE(n_components=2, verbose=1, random_state=0, angle=.99, init='pca')
     tsne_lda = tsne_model.fit_transform(final_topics)
-    print(tsne_lda)
+    print('\nt-SNE shape: ', tsne_lda.shape)
 
-    print('\nColors: ')
-    print(my_colors)
-    plt.scatter(x=tsne_lda[:, 0], y=tsne_lda[:, 1], color=my_colors[n_topics])
+    colors = ['red', 'grey', 'blue', 'pink', 'purple', 'green', 'orange', 'chocolate', 'cyan']
+    for g in np.unique(df.topics):
+        label_idx = np.where(df.topics == g)
+        tsne_lda_label = tsne_lda[label_idx]
+        plt.scatter(x=tsne_lda_label[:, 0], y=tsne_lda_label[:, 1], c=colors[g], label=f'Topic {g}')
+
+    plt.legend()
     plt.show()
     plt.close()
 
 
-def main():
-    df = read_data()
-    if not os.path.exists(os.path.join(DATA_PATH, 'keywords.txt')):
-        docs = df['summary']
-        keywords = generate_keywords(docs)
-        obj_to_file(keywords, 'keywords')
-    else:
-        with open(os.path.join(DATA_PATH, 'keywords.txt')) as file:
-            keywords = json.load(file)
+def main(model='keybert'):
+    if model == 'keybert':
+        df = read_data()
+        if not os.path.exists(os.path.join(DATA_PATH, 'keywords.txt')):
+            docs = df['summary']
+            keywords = generate_keywords(docs)
+            obj_to_file(keywords, 'keywords')
+        else:
+            with open(os.path.join(DATA_PATH, 'keywords.txt')) as file:
+                keywords = json.load(file)
 
-    keywords_list = get_keywords_list(keywords, mode='best')
-    obj_to_file(keywords_list, 'best_keywords')
-    df['keywords'] = keywords_list
-    # Clustering with the Latent Dirichlet Allocation (LDA) algorithm
-    df.to_csv(os.path.join(DATA_PATH, 'df_extended.csv'))
-    lda_clustering(df)
+        keywords_list = get_keywords_list(keywords, mode='best')
+        obj_to_file(keywords_list, 'best_keywords')
+        df['keywords'] = keywords_list
+        df.to_csv(os.path.join(DATA_PATH, 'df_extended.csv'))
+    else:
+        # Clustering with the Latent Dirichlet Allocation (LDA) algorithm
+        txt_list = os.listdir(TXT_PATH)
+        txt_str_list = []
+        for txt in tqdm(txt_list):
+            with open(os.path.join(TXT_PATH, txt), encoding='utf-8') as f:
+                txt_str_list.append(f.read())
+
+        txt_df = pd.DataFrame({'article': txt_str_list})
+        print('\nPre-processing articles for LDA ...')
+        corpus = pre_processing(txt_df, 'article')
+
+        print('\nGetting words\' frequency ...')
+        words_count = corpus_words_frequency(corpus)
+        words_list = list(words_count.keys())
+        words_count_sorted = sorted(words_count.items(), key=lambda x: x[1], reverse=True)
+        words_count_sorted_dict = dict(words_count_sorted)
+        # Words to remove
+        print(list(words_count_sorted_dict.keys())[:100])
+
+        print('\nGetting words for POS tag ...')
+        tagged_words = get_pos_tag(words_list)
+        nn_words = get_words_for_pos(words_list, tagged_words, 'NN')
+
+        # Concatenating all lists of nouns
+        noun_words = nn_words
+
+        # Getting new corpus by removing non POS words
+        print('\nGetting new corpus with only POS tag words ...')
+        new_corpus = clean_corpus_by_pos(corpus, noun_words)
+        print('\nGetting words\' frequency ...')
+        new_words_count = corpus_words_frequency(new_corpus)
+
+        # Remove most frequent words
+        new_corpus_clean = remove_most_frequent_words(new_corpus, new_words_count)
+
+        # LDA clustering with new corpus
+        txt_df = pd.DataFrame({'article': new_corpus_clean})
+        lda_clustering(txt_df, column='article')
 
 
 if __name__ == '__main__':
-    main()
+    main(model='lda')
