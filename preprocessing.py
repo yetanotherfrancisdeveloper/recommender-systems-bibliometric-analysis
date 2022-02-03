@@ -70,8 +70,9 @@ def remove_short_words(corpus: list, threshold=4):
 
 def remove_short_texts(corpus: list, threshold=100):
     only_long_texts = [text for text in tqdm(corpus) if len(text) > threshold]
+    short_texts = [text for text in corpus if len(text) <= threshold]
 
-    return only_long_texts
+    return only_long_texts, short_texts
 
 
 def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
