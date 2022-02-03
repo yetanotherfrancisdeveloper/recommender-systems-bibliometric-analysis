@@ -11,7 +11,7 @@ from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
 from tqdm import tqdm
-from utils import obj_to_file, read_data
+from utils import obj_to_file, read_data, get_pdf_from_txt_name
 
 keywords_model = KeyBERT()
 
@@ -43,7 +43,7 @@ def get_keywords_list(keyword_score_list, mode = 'all'):
     return keywords_list
 
 
-def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95, column='summary'):
+def lda_clustering(df, n_topics=5, min_df=0.05, max_df=0.95, column='summary'):
     # Create Count Vectorizer instance and Document X Term matrix (dtm)
     print('\nCreating Count Vectorizer and Document X Term matrix ...')
     cv = CountVectorizer(max_df=max_df, min_df=min_df, stop_words="english")
@@ -58,13 +58,12 @@ def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95, column='summary'):
     lda_model.fit(dtm)
 
     for i, topic in enumerate(lda_model.components_):
-        print("THE TOP {} WORDS FOR TOPIC #{}".format(10, i))
-        print([cv.get_feature_names_out()[index] for index in topic.argsort()[-10:]])
+        print(f"THE TOP {20} WORDS FOR TOPIC #{i}")
+        print([cv.get_feature_names_out()[index] for index in topic.argsort()[-20:]])
         print("\n")
 
     final_topics = lda_model.transform(dtm)
     df["topics"] = final_topics.argmax(axis=1)
-    print(df.topics.head())
 
     # TSNE for visualization of the clusters
     print('\nCreating and fitting TSNE to visualize clusters in 2D ...')
@@ -72,15 +71,16 @@ def lda_clustering(df, n_topics=5, min_df=3, max_df=0.95, column='summary'):
     tsne_lda = tsne_model.fit_transform(final_topics)
     print('\nt-SNE shape: ', tsne_lda.shape)
 
-    colors = ['red', 'grey', 'blue', 'pink', 'purple', 'green', 'orange', 'chocolate', 'cyan']
     for g in np.unique(df.topics):
         label_idx = np.where(df.topics == g)
         tsne_lda_label = tsne_lda[label_idx]
-        plt.scatter(x=tsne_lda_label[:, 0], y=tsne_lda_label[:, 1], c=colors[g], label=f'Topic {g}')
+        plt.scatter(x=tsne_lda_label[:, 0], y=tsne_lda_label[:, 1], cmap='turbo', label=f'Topic {g}')
 
     plt.legend()
     plt.savefig(f'{PLOT_PATH}/t-SNE_LDA_(topics={n_topics},min_df={min_df},max_df={max_df}.png')
     plt.close()
+
+    return df
 
 
 def main(model='keybert'):
@@ -106,13 +106,17 @@ def main(model='keybert'):
             with open(os.path.join(TXT_PATH, txt), encoding='utf-8') as f:
                 txt_str_list.append(f.read())
 
-        txt_df = pd.DataFrame({'article': txt_str_list})
+        txt_df = pd.DataFrame({'article': txt_str_list, 'file': txt_str_list})
         print('\nPre-processing articles for LDA ...')
         corpus = pre_processing(txt_df, 'article')
 
         # Removing short texts
         print('\nRemoving short texts ...')
-        corpus = remove_short_texts(corpus)
+        corpus, short_texts = remove_short_texts(corpus)
+
+        # Remove texts from
+        for text in short_texts:
+            txt_list.remove(text)
 
         # Removing short words
         print('\nRemoving short words ...')
@@ -142,12 +146,13 @@ def main(model='keybert'):
 
         # Remove most frequent words
         new_corpus_clean = remove_most_frequent_words(new_corpus, new_words_count)
-        print(len(new_corpus_clean))
-        print(new_corpus_clean[0])
 
         # LDA clustering with new corpus
         txt_df = pd.DataFrame({'article': new_corpus_clean})
-        lda_clustering(txt_df, column='article')
+        results_df = lda_clustering(txt_df, column='article')
+        results_df['file'] = txt_list
+        results_df = get_pdf_from_txt_name(results_df)
+        results_df.to_csv(f'{DATA_PATH}/lda_results.csv')
 
 
 if __name__ == '__main__':
