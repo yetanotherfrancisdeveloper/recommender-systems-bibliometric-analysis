@@ -112,11 +112,14 @@ def main(model='keybert'):
 
         # Removing short texts
         print('\nRemoving short texts ...')
-        corpus, short_texts = remove_short_texts(corpus)
+        corpus, short_texts_idxes = remove_short_texts(corpus)
 
         # Remove texts from
-        for text in short_texts:
-            txt_list.remove(text)
+        try:
+            for idx in range(len(short_texts_idxes)):
+                txt_list.pop(short_texts_idxes[idx] - idx)
+        except (IndexError, TypeError) as e:
+            print(f'{e}: check the threshold or the list!')
 
         # Removing short words
         print('\nRemoving short words ...')
