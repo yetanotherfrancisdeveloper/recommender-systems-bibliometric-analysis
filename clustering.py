@@ -11,6 +11,7 @@ def get_sentence_embeddings(sentences, model = 'all-MiniLM-L6-v2'):
     embeddings = sbert_model.encode(sentences)
     return embeddings
 
+
 def main():
     df = pd.read_csv(os.path.join(DATA_PATH, 'df.csv'))
     if not os.path.exists(os.path.join(DATA_PATH, 'embeddings.npy')):
