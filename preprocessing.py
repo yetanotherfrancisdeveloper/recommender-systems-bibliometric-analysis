@@ -31,8 +31,10 @@ def corpus_words_frequency(corpus):
     return corpus_words_count
 
 
-def get_words_for_pos(words_list: list, tagged_words: list, pos: str):
-    words_to_get = [word for word in tqdm(words_list) if (word, pos) in tagged_words]
+def get_words_for_pos(tagged_words: list, pos: str):
+    tagged_words_dict = dict(tagged_words)
+    tagged_words_df = pd.DataFrame({'word': list(tagged_words_dict.keys()), 'pos': list(tagged_words_dict.values())})
+    words_to_get = tagged_words_df.loc[tagged_words_df.pos == pos].word.tolist()
 
     return words_to_get
 
@@ -51,15 +53,30 @@ def remove_most_frequent_words(corpus: list, words_count: dict, top_k=100):
     print(f'\nTop {top_k} most frequent words: ')
     print(words_to_remove)
 
-    new_corpus = [text.replace(word, '') for word in words_to_remove for text in tqdm(corpus)]
+    new_corpus = [' '.join([re.sub('|'.join(words_to_remove), '', word) for word in text.split()])
+                  for text in tqdm(corpus)]
 
     return new_corpus
 
 
-def pre_processing(df: pd.DataFrame, col_name: str):
+def remove_short_words(corpus: list, threshold=3):
+    words_lists = [text.split() for text in corpus]
+    only_long_words = [' '.join([word for word in word_list if len(word) > threshold])
+                       for word_list in tqdm(words_lists)]
+
+    return only_long_words
+
+
+def remove_short_texts(corpus: list):
+    pass
+
+
+def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
     df_len = len(df)
 
     corpus = []
+    lemmatizer = WordNetLemmatizer()
+    voc = set(words.words())
     for i in tqdm(range(df_len)):
         # Get string from df and remove punctuation
         text = re.sub('[^a-zA-Z]', ' ', df[col_name][i])
@@ -74,11 +91,16 @@ def pre_processing(df: pd.DataFrame, col_name: str):
         split_text = text.split()
 
         # Lemmatisation
-        lemmatizer = WordNetLemmatizer()
-        split_lem_text = [lemmatizer.lemmatize(word) for word in split_text
-                          if word not in stopwords and word in set(words.words())]
-        text = ' '.join(split_lem_text)
-        corpus.append(text)
+        if lemmatize:
+            split_lem_text = [lemmatizer.lemmatize(word) for word in split_text
+                              if word not in stopwords and word in voc]
+            text = ' '.join(split_lem_text)
+            corpus.append(text)
+        else:
+            split_lem_text = [word for word in split_text
+                              if word not in stopwords and word in voc]
+            text = ' '.join(split_lem_text)
+            corpus.append(text)
 
     return corpus
 

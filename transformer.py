@@ -6,7 +6,7 @@ from config import DATA_PATH, TXT_PATH
 from keybert import KeyBERT
 from matplotlib import pyplot as plt
 from preprocessing import (pre_processing, corpus_words_frequency, get_words_for_pos, get_pos_tag, clean_corpus_by_pos,
-                           remove_most_frequent_words)
+                           remove_most_frequent_words, remove_short_words)
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
@@ -110,6 +110,10 @@ def main(model='keybert'):
         print('\nPre-processing articles for LDA ...')
         corpus = pre_processing(txt_df, 'article')
 
+        # Removing short words
+        print('\nRemoving short words ...')
+        corpus = remove_short_words(corpus)
+
         print('\nGetting words\' frequency ...')
         words_count = corpus_words_frequency(corpus)
         words_list = list(words_count.keys())
@@ -119,8 +123,9 @@ def main(model='keybert'):
         print(list(words_count_sorted_dict.keys())[:100])
 
         print('\nGetting words for POS tag ...')
+        # TODO: save the POS tags in a .json
         tagged_words = get_pos_tag(words_list)
-        nn_words = get_words_for_pos(words_list, tagged_words, 'NN')
+        nn_words = get_words_for_pos(tagged_words, 'NN')
 
         # Concatenating all lists of nouns
         noun_words = nn_words
@@ -133,6 +138,8 @@ def main(model='keybert'):
 
         # Remove most frequent words
         new_corpus_clean = remove_most_frequent_words(new_corpus, new_words_count)
+        print(len(new_corpus_clean))
+        print(new_corpus_clean[0])
 
         # LDA clustering with new corpus
         txt_df = pd.DataFrame({'article': new_corpus_clean})
