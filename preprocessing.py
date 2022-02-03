@@ -5,6 +5,7 @@ import pandas as pd
 import re
 from matplotlib import pyplot as plt
 from nltk import pos_tag
+from nltk.corpus import words
 from nltk.stem.wordnet import WordNetLemmatizer
 from tqdm import tqdm
 
@@ -42,7 +43,7 @@ def clean_corpus_by_pos(corpus: list, pos_words: list):
     return new_corpus
 
 
-def remove_most_frequent_words(corpus: list, words_count: dict, top_k=0.1):
+def remove_most_frequent_words(corpus: list, words_count: dict, top_k=100):
     words_count_sorted = sorted(words_count.items(), key=lambda x: x[1], reverse=True)
     words_count_sorted_dict = dict(words_count_sorted)
     # Words to remove
@@ -74,7 +75,8 @@ def pre_processing(df: pd.DataFrame, col_name: str):
 
         # Lemmatisation
         lemmatizer = WordNetLemmatizer()
-        split_lem_text = [lemmatizer.lemmatize(word) for word in split_text if word not in stopwords]
+        split_lem_text = [lemmatizer.lemmatize(word) for word in split_text
+                          if word not in stopwords and word in set(words.words())]
         text = ' '.join(split_lem_text)
         corpus.append(text)
 
