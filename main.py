@@ -17,7 +17,6 @@ def bar_plot(words_list: list, frequencies: list, width=0.35, top_k=10):
     x = np.arange(top_k)
     plt.bar(x, frequencies[:top_k], width=width)
     plt.xticks(x, words_list[:top_k], rotation=25)
-    plt.title(f'Top {top_k} words by frequency')
 
     if not os.path.isdir(PLOT_PATH):
         os.mkdir(PLOT_PATH)
@@ -53,7 +52,6 @@ def plot_publications_series(df, remove_years=np.array([])):
     # Bar plot
     plt.bar(np.arange(len(sorted_data.keys())), list(sorted_data.values()), width=0.35)
     plt.xticks(np.arange(len(sorted_data.keys())), list(sorted_data.keys()))
-    plt.title(f'Number of publications from {from_year} to {to_year}')
 
     if not os.path.isdir(PLOT_PATH):
         os.mkdir(PLOT_PATH)
@@ -84,9 +82,9 @@ def main():
     # Get tags for unique words
     print('\nGetting words for POS tag ...')
     tagged_words = get_pos_tag(words_list)
-    nn_words = get_words_for_pos(words_list, tagged_words, 'NN')
-    nns_words = get_words_for_pos(words_list, tagged_words, 'NNS')
-    nnp_words = get_words_for_pos(words_list, tagged_words, 'NNP')
+    nn_words = get_words_for_pos(tagged_words, 'NN')
+    nns_words = get_words_for_pos(tagged_words, 'NNS')
+    nnp_words = get_words_for_pos(tagged_words, 'NNP')
 
     # Concatenating all lists of nouns
     noun_words = nn_words + nns_words + nnp_words
