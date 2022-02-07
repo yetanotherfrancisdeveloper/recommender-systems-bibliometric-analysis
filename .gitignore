@@ -11,8 +11,13 @@ Pipfile
 Pipfile.lock
 
 # Directories
-data
 plots
+
+# Results
+data/*.txt
+data/lda_results.csv
+data/*.json
+data/*.npy
 
 # C extensions
 *.so
