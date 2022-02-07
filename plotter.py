@@ -65,5 +65,8 @@ def plot_words_distribution(words_count: dict):
     plt.axvline(df['count'].mean(), color='k', linestyle='dashed', linewidth=1)
     plt.axvline(df['count'].median(), color='gray', linestyle='dashed', linewidth=1)
 
+    if not os.path.isdir(PLOT_PATH):
+        os.mkdir(PLOT_PATH)
+
     plt.savefig(f'{PLOT_PATH}/words_distribution.png')
     plt.close()
