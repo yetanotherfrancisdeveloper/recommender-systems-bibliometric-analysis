@@ -1,6 +1,5 @@
 import os
 import pathlib
-import sys
 
 
 MASTER = pathlib.Path().absolute()
