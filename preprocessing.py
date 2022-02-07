@@ -3,8 +3,6 @@ import nltk
 import numpy as np
 import pandas as pd
 import re
-from config import PLOT_PATH
-from matplotlib import pyplot as plt
 from nltk import pos_tag
 from nltk.corpus import words
 from nltk.stem.wordnet import WordNetLemmatizer
@@ -141,20 +139,3 @@ def pre_processing(df: pd.DataFrame, col_name: str, lemmatize=False):
             corpus.append(text)
 
     return corpus
-
-
-def plot_words_distribution(words_count: dict):
-    df = pd.DataFrame({'words': list(words_count.keys()), 'count': list(words_count.values())})
-    bins = np.histogram(df['count'], bins=40)[1]
-    # Histogram of words' count
-    plt.hist(df['count'], bins, alpha=.8, edgecolor='red', density=True, label='Count')
-    # Plot KDE
-    df['count'].plot.kde()
-
-    plt.xlim(left=0)
-    # Compute and plot mean and median of distribution
-    plt.axvline(df['count'].mean(), color='k', linestyle='dashed', linewidth=1)
-    plt.axvline(df['count'].median(), color='gray', linestyle='dashed', linewidth=1)
-
-    plt.savefig(f'{PLOT_PATH}/words_distribution.png')
-    plt.close()
