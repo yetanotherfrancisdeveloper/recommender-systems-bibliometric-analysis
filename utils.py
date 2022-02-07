@@ -12,6 +12,7 @@ def read_data():
 
     papers_df = pd.read_csv(f'{DATA_PATH}/df.csv')
     papers_df.drop('Unnamed: 0', axis=1, inplace=True)
+
     return papers_df
 
 
@@ -29,3 +30,18 @@ def get_pdf_from_txt_name(df):
     df['pdf_file'] = our_pdf_files
 
     return df
+
+
+def save_json(out_path: str, data: dict):
+    with open(out_path, 'w') as f:
+        json.dump(data, f, indent=6)
+
+
+def from_json_to_list_tuples(json_path: str):
+    json_file = open(json_path)
+    # It returns a list of lists
+    data = json.load(json_file)
+    # Converting to a list of tuples
+    data_list = [(pos[0], pos[1]) for pos in data]
+
+    return data_list
