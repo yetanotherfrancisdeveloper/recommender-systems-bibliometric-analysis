@@ -89,7 +89,7 @@ def lda_clustering(df, n_topics=5, min_df=0.05, max_df=0.95, column='summary'):
         plt.scatter(x=tsne_lda_label[:, 0], y=tsne_lda_label[:, 1], cmap='turbo', label=f'Topic {g}')
 
     plt.legend()
-    plt.savefig(f'{PLOT_PATH}/t-SNE_LDA_(topics={n_topics},min_df={min_df},max_df={max_df}.png')
+    plt.savefig(f'{PLOT_PATH}/t-SNE_LDA_topics={n_topics},min_df={min_df},max_df={max_df}.png')
     plt.close()
 
     return df
