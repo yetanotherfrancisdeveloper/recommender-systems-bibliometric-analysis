@@ -1,4 +1,5 @@
 # Bibliometric analysis of recommender systems
+![GitHub](https://img.shields.io/github/license/Wilscos/recommender-systems-bibliometric-analysis)
 
 This is the code used in the paper 'A survey on Neural Recommender Systems:
 insights from a bibliographic analysis' (link will be provided when available). In order 
