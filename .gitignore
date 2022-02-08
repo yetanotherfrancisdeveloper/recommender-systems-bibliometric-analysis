@@ -16,6 +16,9 @@ plots
 # Results
 data/*.txt
 data/lda_results.csv
+data/df_dbscan_results.csv
+data/df_extended.csv
+data/df_keybert.csv
 data/*.json
 data/*.npy
 
