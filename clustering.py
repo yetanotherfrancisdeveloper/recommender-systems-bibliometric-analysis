@@ -8,6 +8,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.decomposition import LatentDirichletAllocation
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.manifold import TSNE
+from tqdm import tqdm
 
 
 def get_sentence_embeddings(sentences, model='all-MiniLM-L6-v2'):
@@ -30,7 +31,7 @@ def generate_keywords(docs):
     keywords_model = KeyBERT()
     keywords = list()
 
-    for idx, summary in enumerate(docs):
+    for idx, summary in tqdm(enumerate(docs)):
         if idx % 50 == 0:
             print(f'Processing paper {idx+1}')
         keywords.append(keywords_model.extract_keywords(summary, keyphrase_ngram_range=(1, 2), stop_words=None))
@@ -43,11 +44,11 @@ def get_keywords_list(keyword_score_list, mode = 'all'):
     if mode == 'all':
         for keywords_per_paper in keyword_score_list:
             keywords = list()
-            for keyword_score in keywords_per_paper:    # I think it was meant to be nested like this?
+            for keyword_score in tqdm(keywords_per_paper):    # I think it was meant to be nested like this?
                 keywords.append(keyword_score[0])
             keywords_list.append(keywords)
     elif mode == 'best':
-        for keywords_per_paper in keyword_score_list:
+        for keywords_per_paper in tqdm(keyword_score_list):
             keywords = [keyword_score[0] for keyword_score in keywords_per_paper]
             scores = [keyword_score[1] for keyword_score in keywords_per_paper]
             best_keyword = keywords[np.argmax(scores)]

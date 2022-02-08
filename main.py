@@ -20,7 +20,7 @@ nltk.download('omw-1.4')
 pd.set_option('display.max_columns', None)
 
 
-def main(skip_data_viz=True, clustering_model='lda'):
+def main(clustering_model, skip_data_viz):
     if not skip_data_viz:
         df = read_data()
         print('Dataframe columns:\n')
@@ -62,20 +62,24 @@ def main(skip_data_viz=True, clustering_model='lda'):
     if clustering_model == 'keybert':
         df = read_data()
         if not os.path.exists(os.path.join(DATA_PATH, 'keywords.txt')):
+            print('\nFinding keywords with KeyBert ...')
             docs = df['summary']
             keywords = generate_keywords(docs)
             obj_to_file(keywords, 'keywords')
         else:
+            print('\nKeybert - Collecting keywords from existing .txt file ...')
             with open(os.path.join(DATA_PATH, 'keywords.txt')) as file:
                 keywords = json.load(file)
 
         keywords_list = get_keywords_list(keywords, mode='best')
         obj_to_file(keywords_list, 'best_keywords')
         df['keywords'] = keywords_list
-        df.to_csv(os.path.join(DATA_PATH, 'df_extended.csv'))
+        print('\nSaving to .csv ...')
+        df.to_csv(os.path.join(DATA_PATH, 'df_keybert.csv'))
 
     elif clustering_model == 'dbscan':
         df = read_data()
+        print('\nDBSCAN clustering ...')
         if not os.path.exists(os.path.join(DATA_PATH, 'embeddings.npy')):
             summaries = df['summary']
             embeddings_ndarray = get_sentence_embeddings(summaries)
@@ -83,6 +87,7 @@ def main(skip_data_viz=True, clustering_model='lda'):
         else:
             embeddings_ndarray = np.load(os.path.join(DATA_PATH, 'embeddings.npy'))
 
+        print('\nSaving to .csv ...')
         dbscan_clustering(df, embeddings_ndarray)
 
     elif clustering_model == 'lda':
@@ -161,11 +166,17 @@ def main(skip_data_viz=True, clustering_model='lda'):
 
 
 if __name__ == '__main__':
-    main()
     # Adding parsing of arguments for terminal
     parser = argparse.ArgumentParser(description='Clustering papers on recommender systems into topics')
-    parser.add_argument('-skip_data_viz', type=bool, help='Creates and saves plots on the papers data. '
-                                                          'Value to use: True | False')
-    parser.add_argument('-clustering_model', type=str, help='Model to use in order to cluster data. '
-                                                            'Values to use: "lda" | "dbscan" | "keybert"')
+    parser.add_argument('-skip_data_viz',
+                        action='store_true',
+                        help='Creates and saves plots on the papers data. '
+                             'Value to use: True | False')
+    parser.add_argument('-clustering_model',
+                        type=str,
+                        default='lda',
+                        help='Model to use in order to cluster data. '
+                             'Values to use: "lda" | "dbscan" | "keybert"')
     args = parser.parse_args()
+    main(args.clustering_model,
+         args.skip_data_viz)
