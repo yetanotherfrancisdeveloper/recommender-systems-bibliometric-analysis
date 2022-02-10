@@ -22,6 +22,25 @@ Or if you are using `pipenv`:
 
 `pipenv run main.py`
 
+You can also specify two arguments:
+
+- `-skip_data_viz`: if 'False' it will run a part of the code that will produce some nice plots of the data and will save them in the 'plots' directory. The default value for this is 'True' and you do not need to specify it when you run the code. If specified it will turn the value to 'False'. You don't need to pass any parameter to this argument.
+- `-clustering_model`: the default value is 'lda'. You can also opt for 'keyber' and 'dbscan' to obtain the results from these models instead.
+
+### Example
+
+`pipenv run main.py -skip_data_viz -clustering_model keybert`
+
+In this way you are making the plots that are going to be saved in the 'plots' directory, and you are using keybert to get the keywords for each cluster.
+
+`pipenv run main.py -clustering_model dbscan`
+
+In this case you are not making plots of the data, and you are using DBScan to cluster the papers.
+
+`pipenv run main.py`
+
+And if you run the code like this, you won't make the plots and you will use Latent Dirichlet Allocation (LDA) to cluster the papers.
+
 ## Some of our results
 
 We scraped all the papers published in open access in the last 5 years that treated 
@@ -34,7 +53,7 @@ below.
 
 It is easy to notice the steady growth in the number of publications per year. We wanted 
 to understand what were the main topics that drove this growth. To dp this we decided 
-to cluster the last 1000 papers published with the Latent Dirichlet Allocation (LDA) 
+to cluster the last 1000 papers published with the LDA 
 algorithm. The results from the algorithm are shown in the image below.
 
 <p align="center">
