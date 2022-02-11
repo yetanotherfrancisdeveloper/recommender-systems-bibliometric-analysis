@@ -24,8 +24,8 @@ Or if you are using `pipenv`:
 
 You can also specify two arguments:
 
-- `-skip_data_viz`: if 'False' it will run a part of the code that will produce some nice plots of the data and will save them in the 'plots' directory. The default value for this is 'True' and you do not need to specify it when you run the code. If specified it will turn the value to 'False'. You don't need to pass any parameter to this argument.
-- `-clustering_model`: the default value is 'lda'. You can also opt for 'keyber' and 'dbscan' to obtain the results from these models instead.
+- `-skip_data_viz`: The default code behaviour is to run a part of the code that produces some nice plots of the data and saves them in the 'plots' directory. If this argument is specified, it will not. You don't need to pass any additional parameter to this argument.
+- `-clustering_model`: the default value is 'lda'. You can also opt for 'keybert' and 'dbscan' to obtain the results from these models instead.
 
 ### Example
 
