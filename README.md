@@ -82,8 +82,8 @@ contacting us!
 
 ## About the scraper
 
-We got the .pdf files gathered in the [articles_pdf directory](data\articles_pdf) from 
-arXiv through the scraper that you can find [here](scraper\arxiv_scraping.py). It is not 
+We got the .pdf files gathered in the [articles_pdf directory](data/articles_pdf) from 
+arXiv through the scraper that you can find [here](scraper/arxiv_scraping.py). It is not 
 possible tough to get all .pdf files from arxiv for two reasons:
 
 - They interrupt the connection with you after scraping for a while. You would need to 
@@ -100,9 +100,9 @@ work on this in the future.
 In the [data directory](data) you will find two directories and a .csv file with the 
 necessary data to run the scripts and perform the analysis:
 
-- [.pdf articles](data\articles_pdf)
-- [.txt articles](data\texts)
-- [.csv file](data\df.csv)
+- [.pdf articles](data/articles_pdf)
+- [.txt articles](data/texts)
+- [.csv file](data/df.csv)
 
 To convert the .pdf files to .txt files we slightly modified 
 [this repository](https://github.com/yuchangfeng/PDFBoT) from
