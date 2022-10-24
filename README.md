@@ -52,7 +52,7 @@ below.
 </p>
 
 It is easy to notice the steady growth in the number of publications per year. We wanted 
-to understand what were the main topics that drove this growth. To dp this we decided 
+to understand what were the main topics that drove this growth. To do this we decided 
 to cluster the last 1000 papers published with the LDA 
 algorithm. The results from the algorithm are shown in the image below.
 
